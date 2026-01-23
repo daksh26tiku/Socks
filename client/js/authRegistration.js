@@ -1,6 +1,6 @@
 const regButton = document.querySelector(".btn-register");
 
-const API_BASE = "https://socks-0fmc.onrender.com";
+const API_BASE = "https://socks-zz58.onrender.com";
 
 regButton.addEventListener("click", (e) => {
   e.preventDefault();

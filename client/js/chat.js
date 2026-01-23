@@ -1,4 +1,4 @@
-const API_BASE = "https://socks-0fmc.onrender.com";
+const API_BASE = "https://socks-zz58.onrender.com";
 
 const socket = io({
   transportOptions: {

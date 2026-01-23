@@ -7,7 +7,7 @@ const closeBtn = document.querySelector(".close");
 const confirmBtn = document.getElementById("confirmBtn");
 const cancelBtn = document.getElementById("cancelBtn");
 
-const API_BASE = "https://socks-0fmc.onrender.com";
+const API_BASE = "https://socks-zz58.onrender.com";
 
 leaveBtn.addEventListener("click", (e) => {
   e.preventDefault();
