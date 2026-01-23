@@ -1,0 +1,42 @@
+const {Kafka} = require('kafkajs');
+const { kafkaConfig } = require('../../config');
+
+const kafkaConfigObj = {
+  clientId: 'my-app',
+  brokers: kafkaConfig.brokers
+};
+
+if (kafkaConfig.ssl && kafkaConfig.ca) {
+  kafkaConfigObj.ssl = {
+    rejectUnauthorized: true,
+    ca: [Buffer.from(kafkaConfig.ca, 'utf8')],
+    cert: kafkaConfig.cert ? Buffer.from(kafkaConfig.cert, 'utf8') : undefined,
+    key: kafkaConfig.key ? Buffer.from(kafkaConfig.key, 'utf8') : undefined,
+  };
+}
+
+const kafka = new Kafka(kafkaConfigObj);
+
+const producer = kafka.producer()
+const produce = async (res,  topic) => {
+    await producer.connect();
+    await producer.send({
+        topic,
+        //convert value to a JSON string and send it
+        messages: [{
+            value: JSON.stringify(res) }]
+    });
+    console.log('Message sent successfully', res)
+
+    process.on('SIGINT', handleShutdown);
+    process.on('SIGTERM', handleShutdown);
+}
+
+async function handleShutdown(signal) {
+    console.log(`Received signal ${signal}, shutting down Kafka producer...`);
+    await producer.disconnect();
+    console.log("Kafka producer disconnected");
+    process.exit(0); // Exit the process after consumer disconnects
+}
+
+module.exports = {produce}
