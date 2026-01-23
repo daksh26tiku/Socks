@@ -85,25 +85,73 @@ seeRoomBtn.addEventListener('click', async () => {
   // ------------------------------------------------------------------ start
   const chatRoomList = document.querySelector('.chatRoomList');
 
-  if (!availableRooms.length) {
+  if (!availableRooms || !availableRooms.length) {
     document.querySelector('.roomListTitle').textContent = 'No Room Available!';
     document.querySelector('.roomListTitle').style.display = 'block';
     chatRoomList.querySelector('ul').style.display = 'none';
   } else {
+    document.querySelector('.roomListTitle').textContent = 'Available Chat Rooms';
     document.querySelector('.roomListTitle').style.display = 'block';
     chatRoomList.querySelector('ul').style.display = 'block';
     document.getElementById('room-list').innerHTML = '';
 
     availableRooms.forEach(room => {
       const li = document.createElement('li');
-      li.textContent = room.name;
-      li.addEventListener('click', () => {
+      
+      // 1. Create a span for the room name (Click to Join)
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = room.name;
+      nameSpan.style.cursor = "pointer";
+      nameSpan.style.flexGrow = "1"; // Push delete button to the right
+      nameSpan.addEventListener('click', () => {
         handleRoomClick(room);
       });
+
+      // 2. Create the Delete Button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = "🗑️"; 
+      deleteBtn.style.marginLeft = "10px";
+      deleteBtn.style.background = "transparent";
+      deleteBtn.style.border = "none";
+      deleteBtn.style.cursor = "pointer";
+      deleteBtn.title = "Delete Room";
+
+      // 3. Attach Delete Event
+      deleteBtn.addEventListener('click', async (e) => {
+        e.stopPropagation(); // Stop the click from joining the room
+        
+        if(confirm(`Are you sure you want to delete room "${room.name}"?`)) {
+            try {
+                await axios.delete(
+                    `${API_BASE}/api/chat/${room.id}`,
+                    {
+                        headers: {
+                            Authorization: `BEARER ${sessionStorage.getItem("auth-token")}`,
+                        },
+                    }
+                );
+                alert("Room deleted!");
+                // Refresh the list immediately
+                seeRoomBtn.click(); 
+            } catch (error) {
+                console.error(error);
+                alert("Failed to delete room");
+            }
+        }
+      });
+
+      // 4. Style the list item layout
+      li.style.display = "flex";
+      li.style.justifyContent = "space-between";
+      li.style.alignItems = "center";
+      
+      // 5. Append elements
+      li.appendChild(nameSpan);
+      li.appendChild(deleteBtn);
+      
       roomList.appendChild(li);
     });
   }
-
   // ------------------------------------------------------------------ end
     
 });
@@ -112,18 +160,45 @@ const handleRoomClick = async (room) => {
     console.log('Room Clicked');
     window.location.href = `chat.html?roomId=${room.id}&roomName=${room.name}`
 }
+//   if (!availableRooms.length) {
+//     document.querySelector('.roomListTitle').textContent = 'No Room Available!';
+//     document.querySelector('.roomListTitle').style.display = 'block';
+//     chatRoomList.querySelector('ul').style.display = 'none';
+//   } else {
+//     document.querySelector('.roomListTitle').style.display = 'block';
+//     chatRoomList.querySelector('ul').style.display = 'block';
+//     document.getElementById('room-list').innerHTML = '';
 
-//   createBtn.addEventListener("click", (e) => {
-//     e.preventDefault();
-//     modal.style.display = "block";
-//   });
-
-//   closeBtn.addEventListener("click", function() {
-//       document.getElementById('roomNameInput').value='';
-//       modal.style.display = "none";
+//     availableRooms.forEach(room => {
+//       const li = document.createElement('li');
+//       li.textContent = room.name;
+//       li.addEventListener('click', () => {
+//         handleRoomClick(room);
+//       });
+//       roomList.appendChild(li);
 //     });
+//   }
 
-//   cancelBtn.addEventListener("click", function() {
-//     document.getElementById('roomNameInput').value='';
-//     modal.style.display = "none";
-//   });
+//   // ------------------------------------------------------------------ end
+    
+// });
+
+// const handleRoomClick = async (room) => {
+//     console.log('Room Clicked');
+//     window.location.href = `chat.html?roomId=${room.id}&roomName=${room.name}`
+// }
+
+// //   createBtn.addEventListener("click", (e) => {
+// //     e.preventDefault();
+// //     modal.style.display = "block";
+// //   });
+
+// //   closeBtn.addEventListener("click", function() {
+// //       document.getElementById('roomNameInput').value='';
+// //       modal.style.display = "none";
+// //     });
+
+// //   cancelBtn.addEventListener("click", function() {
+// //     document.getElementById('roomNameInput').value='';
+// //     modal.style.display = "none";
+// //   });
