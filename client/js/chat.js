@@ -1,6 +1,6 @@
 const API_BASE = "https://socks-zz58.onrender.com";
 
-const socket = io({
+const socket = io(API_BASE, { 
   transportOptions: {
     polling: {
       extraHeaders: {
