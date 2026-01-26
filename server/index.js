@@ -27,18 +27,10 @@ app.use(bodyParser.json());
 
 // CORS middleware for REST API
 app.use((req, res, next) => {
+  const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ['*'];
   const origin = req.headers.origin;
   
-  // Allow specific origins for development
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'https://socks-zz58.onrender.com'
-  ];
-  
-  if (allowedOrigins.includes(origin) || !origin) {
+  if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin || '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -50,11 +42,6 @@ app.use((req, res, next) => {
   }
   next();
 });
-
-// Static files served by Vercel in production
-if (process.env.NODE_ENV !== 'production') {
-  app.use(express.static('./client'));
-}
 
 app.use('/api', chatRoutes);
 // Static files served by Vercel in production
