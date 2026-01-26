@@ -12,7 +12,7 @@ const API_BASE = "https://socks-zz58.onrender.com";
 leaveBtn.addEventListener("click", (e) => {
   e.preventDefault();
   sessionStorage.removeItem("auth-token");
-  window.location.href = "login.html";
+  window.location.href = "/";
 });
 
 createBtn.addEventListener("click", function () {
