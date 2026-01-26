@@ -1,32 +1,30 @@
-version: '3.8'
-
 services:
   zookeeper:
-    image: 'wurstmeister/zookeeper:latest'
+    image: confluentinc/cp-zookeeper:7.4.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     ports:
       - '2181:2181'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
   kafka:
-    image: 'wurstmeister/kafka:latest'
+    image: confluentinc/cp-kafka:7.4.0
     environment:
-      - KAFKA_BROKER_ID=1
-      - 'KAFKA_LISTENERS=PLAINTEXT://:9092'
-      - 'KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092'
-      - 'KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181'
-      - ALLOW_PLAINTEXT_LISTENER=yes
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ALLOW_PLAINTEXT_LISTENER: yes
     depends_on:
       - zookeeper
 
-  mysql-container:
-    image: 'mysql:latest'
+  postgres-container:
+    image: 'postgres:15-alpine'
     environment:
-      - MYSQL_ROOT_PASSWORD=root-pw
-      - MYSQL_DATABASE=chat-app
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=1234
+      - POSTGRES_DB=chat-app
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=1234
     ports:
-      - '3307:3306'
+      - '5432:5432'
 
   redis-container:
     image: 'redis:latest'
@@ -38,18 +36,27 @@ services:
     restart: unless-stopped
     ports:
       - '3000:3000'
+    environment:
+      - DATABASE_URL=postgresql://user:1234@postgres-container:5432/chat-app
+      - DB_HOST=postgres-container
+      - DB_USER=user
+      - DB_PASSWORD=1234
+      - DB_NAME=chat-app
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis-container:6379
+      - KAFKA_BROKERS=kafka:9092
     depends_on:
-      - mysql-container
+      - postgres-container
       - redis-container
       - kafka
     labels:
       - "autoheal=true"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 8s
-      timeout: 5s
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
       retries: 3
-      start_period: 5s
+      start_period: 40s
   autoheal:
     image: willfarrell/autoheal:latest
     tty: true
